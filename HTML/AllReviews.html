@@ -10,30 +10,38 @@
             crossorigin="anonymous">
     </script>
     <script src="../Scripts/ajaxCalls.js"></script>
+    <script src="../Scripts/UserHandel.js"></script>
+    <link href="StyleSheet1.css" rel="stylesheet" />
 
     <script>
         $(document).ready(function () {
-            console.log("getting all Rev");
-            ajaxCall("GET", "../api/Rev", "", getSuccessRevs, getErrorRevs);
+            console.log("getting all User Rev");
+            let User = JSON.parse(localStorage.getItem('UserIn'));
+            ajaxCall("GET", "../api/Rev?userId="+User.Id, "", getSuccessRevs, getErrorRevs);
         });
 
         function getSuccessRevs(reviews) {
             var str = "";
-            for (var i = 0; i < reviews.length; i++) {
-                str += "<div class='col-xs-12 col-md card'><h3>Artical Id:" + reviews[i].ArtId + "</h1>";
-                str += "<p>revier name:" + reviews[i].RevName + "</p>";
-                str += "<P>revier Email:" + reviews[i].RevEmail + "</P>";
-                var dates = reviews[i].RevDate.split("T");
-                var date = dates[0];
-                str += "<P>review DatePublish: " + date + "</P>";
-                str += "<h3>review Rate: " + reviews[i].Rate + "</h3>";
-                str += "<p>Review Content: " + reviews[i].RevText + "</p></div>";
-                //if (serList[i].PicUrl != "") {
-                //    str += "<img src='" + serList[i].PicUrl + "' />";
-                //}
-                //str += "<a href='" + serList[i].Link + "'>Artical Link</a>";
-                //str += "<button class='addRvBTN' id='" + serList[i].ArtId + "' onclick='AddRvBD()'>ADD Review</button></div>";
+            if (reviews.length == 0) {
+                str = "NO REVIWS FOR YOU FAYVORITE SERIOUS";
+            }
+            else {
+                for (var i = 0; i < reviews.length; i++) {
+                    str += "<div class='col-xs-12 col-md card'><h3>Artical Id:" + reviews[i].ArtId + "</h1>";
+                    str += "<p>revier name:" + reviews[i].RevName + "</p>";
+                    str += "<P>revier Email:" + reviews[i].RevEmail + "</P>";
+                    var dates = reviews[i].RevDate.split("T");
+                    var date = dates[0];
+                    str += "<P>review DatePublish: " + date + "</P>";
+                    str += "<h3>review Rate: " + reviews[i].Rate + "</h3>";
+                    str += "<p>Review Content: " + reviews[i].RevText + "</p></div>";
+                    //if (serList[i].PicUrl != "") {
+                    //    str += "<img src='" + serList[i].PicUrl + "' />";
+                    //}
+                    //str += "<a href='" + serList[i].Link + "'>Artical Link</a>";
+                    //str += "<button class='addRvBTN' id='" + serList[i].ArtId + "' onclick='AddRvBD()'>ADD Review</button></div>";
 
+                }
             }
             $("#ph").html(str);
         }
@@ -46,9 +54,94 @@
 
 </head>
 <body>
+
+    <nav class="navbar sticky-top navbar-dark bg-dark">
+        <a class="navbar-brand" id="UserName">אורח</a>
+        <a class="nav-item nav-link" href="insert.html" id="AddArt">הוספת כתבות</a>
+        <a class="nav-item nav-link" href="view.html" id="myArt">הכתבות שלי</a>
+        <a class="nav-item nav-link" href="AllReviews.html" id="myRev">ביקורות</a>
+        <div>
+            <button class="btn btn-light" type="submit" id="singUp">הרשמה</button>
+            <button class="btn btn-light" type="submit" id="singIn">התחברות</button>
+            <button class="btn btn-light" type="submit" id="singOut" onclick="singOut()">התנתקות</button>
+        </div>
+
+    </nav>
+
+
+
     <h1>All REV:</h1>
     <div class="container" id="ph">
 
     </div>
+
+    <div id="popupIn" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modalContent modal-content">
+                <form id="NewUserSingInForm">
+                    <table>
+                        <tr>
+                            <td>מייל</td>
+                            <td><input type="email" id="UserEmailIn" maxlength="200" required /></td>
+                        </tr>
+                        <tr>
+                            <td>ססמא</td>
+                            <td><input type="text" id="UserPasswordIn" maxlength="50" required /></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button>התחבר</button>
+                                <input type="button" onclick="closeForm()" value="חזרה" />
+                            </td>
+                        </tr>
+                    </table>
+                    <div id="ErrorIn"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="popupUp" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modalContent modal-content">
+                <form id="NewUserSingUpForm">
+                    <table>
+                        <tr>
+                            <td>שם פרטי</td>
+                            <td><input type="text" id="UserFname" maxlength="100" required /></td>
+                        </tr>
+                        <tr>
+                            <td>שם משפחה</td>
+                            <td><input type="text" id="UserLname" maxlength="100" required /></td>
+                        </tr>
+                        <tr>
+                            <td>תאריך לידה</td>
+                            <td><input type="date" id="UserbDate" /></td>
+                        </tr>
+                        <tr>
+                            <td>מייל</td>
+                            <td><input type="email" id="UserEmailUp" maxlength="200" required /></td>
+                        </tr>
+                        <tr>
+                            <td>ססמא</td>
+                            <td><input type="text" id="UserPasswordUp" maxlength="50" required /></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button>הירשם</button>
+                                <input type="button" onclick="closeForm()" value="חזרה" />
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div id="ErrorUp">
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
 </body>
 </html>

@@ -11,10 +11,23 @@
     </script>
     <script src="../Scripts/ajaxCallsWithKey.js"></script>
     <script src="../Scripts/ajaxCalls.js"></script>
+    <link href="StyleSheet1.css" rel="stylesheet" />
+    <script src="../Scripts/UserHandel.js"></script>
     <script>
 
         $(document).ready(function () {
             $("#getTV").click(getTV);
+
+            $("#singIn").on("click", function () {
+                $("#popupIn").css("display", "block");
+            });
+
+            $("#singUp").on("click", function () {
+                $("#popupUp").css("display", "block");
+            });
+
+            $("#NewUserSingUpForm").submit(handelSubmitUp);
+            $("#NewUserSingInForm").submit(handelSubmitIn);
         });
 
         function getTV() {
@@ -89,32 +102,42 @@
             console.log(err);
         }
 
+
         function AddArtBD(index) {
 
-            if (newsArr[index].image==undefined) {
-                var strUrl = "";
+            if (localStorage.getItem('UserIn') === null) {
+                alert("על מנת להוסיף כתבה יש להתחבר למערכת")
+                return;
+            }
+            else {
+                if (newsArr[index].image == undefined) {
+                    var strUrl = "";
+                }
+                else {
+                    var strUrl = newsArr[index].image.url
+                }
+
+
+                var strArr = newsArr[index].id.split("/");
+                artId = strArr[3];
+
+                let Article = { // Note that the field names must match the C# class properties
+                    Serid: tvId,
+                    SName: tvName,
+                    Heder: newsArr[index].head,
+                    Summery: newsArr[index].body,
+                    Sorce: newsArr[index].source.label,
+                    Pdate: newsArr[index].publishDateTime,
+                    PicUrl: strUrl,
+                    Link: newsArr[index].link,
+                    ArtId: artId
+                }
+                console.log(Article);
+                BtnId = index;
+                let User = JSON.parse(localStorage.getItem('UserIn'));
+                ajaxCall("POST", "../api/News?UserId=" + User.Id, JSON.stringify(Article), postSuccess, postError)
             }
             
-            else {
-                var strUrl= newsArr[index].image.url
-            }
-            var strArr = newsArr[index].id.split("/");
-            var artId = strArr[3];
-
-            let Article = { // Note that the field names must match the C# class properties
-                Serid: tvId,
-                SName: tvName,
-                Heder: newsArr[index].head,
-                Summery: newsArr[index].body,
-                Sorce: newsArr[index].source.label,
-                Pdate: newsArr[index].publishDateTime,
-                PicUrl: strUrl,
-                Link: newsArr[index].link,
-                ArtId: artId
-            }
-            console.log(Article);
-            BtnId = index;
-            ajaxCall("POST", "../api/News", JSON.stringify(Article), postSuccess, postError)
         }
 
         function postSuccess() {
@@ -124,17 +147,100 @@
 
         function postError(err) {
             console.log(err.responseText);
-            console.log(err);
+            $("#" + BtnId).prop("disabled", true);
+            alert("הכתבה שבחרת כבר שמורה בכתובת שלך");
         }
 
 
     </script>
 </head>
 <body>
-    <input type="text" id="tvShowName" />
-    <button id="getTV">Get TV Show</button>
+    <nav class="navbar sticky-top navbar-dark bg-dark">
+        <a class="navbar-brand" id="UserName">אורח</a>
+        <a class="nav-item nav-link" href="insert.html" id="AddArt" >הוספת כתבות</a>
+        <a class="nav-item nav-link" href="view.html" id="myArt">הכתבות שלי</a>
+        <a class="nav-item nav-link" href="AllReviews.html" id="myRev">ביקורות</a>
+        <div>
+            <button class="btn btn-light" type="submit" id="singUp">הרשמה</button>
+            <button class="btn btn-light" type="submit" id="singIn">התחברות</button>
+            <button class="btn btn-light" type="submit" id="singOut" onclick="singOut()">התנתקות</button>
+        </div>
+
+    </nav>
+    <div class="row" id="top">
+        <input type="text" id="tvShowName" />
+        <button id="getTV">Get TV Show</button>
+    </div>
     <div id="ph" class="row">
 
     </div>
+
+    <div id="popupIn" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modalContent modal-content">
+                <form id="NewUserSingInForm">
+                    <table>
+                        <tr>
+                            <td>מייל</td>
+                            <td><input type="email" id="UserEmailIn" maxlength="200" required /></td>
+                        </tr>
+                        <tr>
+                            <td>ססמא</td>
+                            <td><input type="text" id="UserPasswordIn" maxlength="50" required /></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button>התחבר</button>
+                                <input type="button" onclick="closeForm()" value="חזרה" />
+                            </td>
+                        </tr>
+                    </table>
+                    <div id="ErrorIn"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="popupUp" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modalContent modal-content">
+                <form id="NewUserSingUpForm">
+                    <table>
+                        <tr>
+                            <td>שם פרטי</td>
+                            <td><input type="text" id="UserFname" maxlength="100" required /></td>
+                        </tr>
+                        <tr>
+                            <td>שם משפחה</td>
+                            <td><input type="text" id="UserLname" maxlength="100" required /></td>
+                        </tr>
+                        <tr>
+                            <td>תאריך לידה</td>
+                            <td><input type="date" id="UserbDate" /></td>
+                        </tr>
+                        <tr>
+                            <td>מייל</td>
+                            <td><input type="email" id="UserEmailUp" maxlength="200" required /></td>
+                        </tr>
+                        <tr>
+                            <td>ססמא</td>
+                            <td><input type="text" id="UserPasswordUp" maxlength="50" required /></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button>הירשם</button>
+                                <input type="button" onclick="closeForm()" value="חזרה" />
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div id="ErrorUp">
+                
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
