@@ -8,25 +8,25 @@ using System.Web.Http;
 
 namespace EX3.Controllers
 {
-    public class RevController : ApiController
+    public class UsersController : ApiController
     {
         // GET api/<controller>
-        public List<Review> Get(int userId)
+        public IEnumerable<string> Get()
         {
-            Review DBart = new Review();
-            return DBart.getAllRev(userId);
+            return new string[] { "value1", "value2" };
         }
 
         // GET api/<controller>/5
-        //public string Get(int id)
-        //{
-        //    return "value";
-        //}
+        public User Get(string email, string password)
+        {
+            User U = new User();
+            return U.readUser(email, password);
+        }
 
         // POST api/<controller>
-        public int Post([FromBody] Review R)
+        public int Post([FromBody] User U)
         {
-            int id = R.Insert();
+            int id = U.Insert();
             return id;
         }
 

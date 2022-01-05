@@ -44,25 +44,27 @@ namespace EX3.Models
         public string Link { get => link; set => link = value; }
 
 
-        public int Insert()
+        public int Insert(int UserId)
         {
             DataServices ds = new DataServices();
             this.heder= this.Heder.Replace("'", "''");
             this.summery = this.summery.Replace("'", "''");
-            int status = ds.Insert(this);
+            int status = ds.InsertArt(this, UserId);
             return status;
         }
-        public List<string> getAllTv()
+        public List<string> getAllTv(int userId)
         {
             DataServices dbs = new DataServices();
-            return dbs.ReadTVsName();
+            return dbs.ReadTVsName(userId);
 
         }
 
-        public List<Article> getAllArt(string srName)
+        public List<Article> getAllArt(string srName, int userId)
         {
             DataServices dbs = new DataServices();
-            return dbs.ReadArticals(srName);
+            return dbs.ReadArticals(srName, userId);
         }
+
+       
     }
 }
