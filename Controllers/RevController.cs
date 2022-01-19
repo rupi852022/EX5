@@ -31,8 +31,9 @@ namespace EX3.Controllers
         }
 
         // PUT api/<controller>/5
-        public void Put(int id, [FromBody] string value)
+        public void Put(int id)
         {
+
         }
 
         // DELETE api/<controller>/5

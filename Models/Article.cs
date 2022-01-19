@@ -65,6 +65,14 @@ namespace EX3.Models
             return dbs.ReadArticals(srName, userId);
         }
 
-       
+        public int updateStatus(string Artid, int UserId)
+        {
+            DataServices ds = new DataServices();
+            int status = ds.updateAllArt(Artid, UserId);
+            return status;
+        }
+
+
+
     }
 }
