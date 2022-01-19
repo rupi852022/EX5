@@ -11,14 +11,27 @@
             crossorigin="anonymous">
     </script>
     <script src="../Scripts/ajaxCalls.js"></script>
+    <script src="../Scripts/UserHandel.js"></script>
 
     <script>
 
         $(document).ready(function () {
-            console.log("getting all tvs");
-            ajaxCall("GET", "../api/News", "", getSuccessTvs, getErrorTvs);
+            console.log("getting all User tvs");
+            let User = JSON.parse(localStorage.getItem('UserIn'));
+            ajaxCall("GET", "../api/News?userId="+ User.Id, "", getSuccessTvs, getErrorTvs);
 
-            $("#NewReForm").submit(handelSubmit)
+            $("#NewReForm").submit(handelSubmit);
+
+            $("#singIn").on("click", function () {
+                $("#popupIn").css("display", "block");
+            });
+
+            $("#singUp").on("click", function () {
+                $("#popupUp").css("display", "block");
+            });
+
+            $("#NewUserSingUpForm").submit(handelSubmitUp);
+            $("#NewUserSingInForm").submit(handelSubmitIn);
         });
 
         function getSuccessTvs(serName) {
@@ -35,7 +48,8 @@
 
         function showArts() {
             sName = $("#chosenSer").val();
-            let api = "../api/News?srName=" + sName;
+            let User = JSON.parse(localStorage.getItem('UserIn'));
+            let api = "../api/News?srName=" + sName + "&userId=" + User.Id;
 
             ajaxCall("GET", api, "", getSuccessSer, getErrorSer);
         }
@@ -86,7 +100,7 @@
         //    //document.getElementById("modalContent").innerHTML = strIng;
         //}
 
-        function closeForm() {
+        function closeRevForm() {
             $("#popup").css("display", "none");
         }
 
@@ -127,6 +141,19 @@
 
 </head>
 <body>
+
+    <nav class="navbar sticky-top navbar-dark bg-dark">
+        <a class="navbar-brand" id="UserName">אורח</a>
+        <a class="nav-item nav-link" href="insert.html" id="AddArt">הוספת כתבות</a>
+        <a class="nav-item nav-link" href="view.html" id="myArt">הכתבות שלי</a>
+        <a class="nav-item nav-link" href="AllReviews.html" id="myRev">ביקורות</a>
+        <div>
+            <button class="btn btn-light" type="submit" id="singUp">הרשמה</button>
+            <button class="btn btn-light" type="submit" id="singIn">התחברות</button>
+            <button class="btn btn-light" type="submit" id="singOut" onclick="singOut()">התנתקות</button>
+        </div>
+
+    </nav>
     <div>
         <h1>Chose a Serius: </h1>
         <input list="serios" id="chosenSer">
@@ -141,38 +168,105 @@
 
     </div>
 
-   <div id="popup" class="modal" tabindex="-1" role="dialog">
-       <div class="modal-dialog" role="document">
-           <div id="modalContent" class="modal-content">
-               <form id="NewReForm">
-                   <table>
-                       <tr>
-                           <td>Reviewer Name:</td>
-                           <td><input type="text" id="RevName" required maxlength="30" /></td>
-                       </tr>
-                       <tr>
-                           <td>Reviewer Email:</td>
-                           <td><input type="email" id="RevEmail" required /></td>
-                       </tr>
-                       <tr>
-                           <td>Rate:</td>
-                           <td><input type="number" id="RevRate" required min="1" max="5" /></td>
-                       </tr>
-                       <tr>
-                           <td>Review:</td>
-                           <td><input type="text" id="RevText" required minlength="10" maxlength="200" /></td>
-                       </tr>
-                       <tr>
-                           <td>
-                               <button>Submit</button>
-                               <input type="button" onclick="closeForm()" value="Close Form" />
-                           </td>
-                       </tr>
-                   </table>
-               </form>
-           </div>
-           </div>
-       </div>
+    <div id="popup" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modalContent modal-content">
+                <form id="NewReForm">
+                    <table>
+                        <tr>
+                            <td>Reviewer Name:</td>
+                            <td><input type="text" id="RevName" required maxlength="30" /></td>
+                        </tr>
+                        <tr>
+                            <td>Reviewer Email:</td>
+                            <td><input type="email" id="RevEmail" required /></td>
+                        </tr>
+                        <tr>
+                            <td>Rate:</td>
+                            <td><input type="number" id="RevRate" required min="1" max="5" /></td>
+                        </tr>
+                        <tr>
+                            <td>Review:</td>
+                            <td><input type="text" id="RevText" required minlength="10" maxlength="200" /></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button>Submit</button>
+                                <input type="button" onclick="closeRevForm()" value="Close Form" />
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="popupIn" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modalContent modal-content">
+                <form id="NewUserSingInForm">
+                    <table>
+                        <tr>
+                            <td>מייל</td>
+                            <td><input type="email" id="UserEmailIn" maxlength="200" required /></td>
+                        </tr>
+                        <tr>
+                            <td>ססמא</td>
+                            <td><input type="text" id="UserPasswordIn" maxlength="50" required /></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button>התחבר</button>
+                                <input type="button" onclick="closeForm()" value="חזרה" />
+                            </td>
+                        </tr>
+                    </table>
+                    <div id="ErrorIn"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="popupUp" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modalContent modal-content">
+                <form id="NewUserSingUpForm">
+                    <table>
+                        <tr>
+                            <td>שם פרטי</td>
+                            <td><input type="text" id="UserFname" maxlength="100" required /></td>
+                        </tr>
+                        <tr>
+                            <td>שם משפחה</td>
+                            <td><input type="text" id="UserLname" maxlength="100" required /></td>
+                        </tr>
+                        <tr>
+                            <td>תאריך לידה</td>
+                            <td><input type="date" id="UserbDate" /></td>
+                        </tr>
+                        <tr>
+                            <td>מייל</td>
+                            <td><input type="email" id="UserEmailUp" maxlength="200" required /></td>
+                        </tr>
+                        <tr>
+                            <td>ססמא</td>
+                            <td><input type="text" id="UserPasswordUp" maxlength="50" required /></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button>הירשם</button>
+                                <input type="button" onclick="closeForm()" value="חזרה" />
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div id="ErrorUp">
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>

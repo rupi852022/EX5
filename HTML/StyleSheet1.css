@@ -1,15 +1,20 @@
 ﻿
 
-#popup {
+#popupIn {
     display: none;
 }
 
-#modalContent {
+#popupUp {
+    display: none;
+}
+
+.modalContent {
     background-color: #fefefe;
     margin: 15% auto;
     padding: 20px;
     border: 1px solid #888;
     width: 80%;
+    direction: rtl;
 }
 
 .modal {
@@ -24,3 +29,13 @@
     background-color: black;
     background-color: rgba(0, 0, 0, 0.4);
 }
+
+#top {
+    width: 50%;
+    margin: 2% auto;
+}
+
+.nav-link{
+    color: white;
+}
+

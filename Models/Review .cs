@@ -47,10 +47,10 @@ namespace EX3.Models
             return status;
         }
 
-        public List<Review> getAllRev()
+        public List<Review> getAllRev(int userId)
         {
             DataServices dbs = new DataServices();
-            return dbs.ReadRev();
+            return dbs.ReadRev(userId);
         }
     }
 }
