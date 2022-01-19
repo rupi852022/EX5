@@ -1,0 +1,531 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+
+    <title></title>
+
+    <meta charset="utf-8" />
+
+    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">-->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.dataTables.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous">
+    </script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <link href="StyleSheet1.css" rel="stylesheet" />
+
+    <script src="../Scripts/ajaxCalls.js"></script>
+    <script src="../Scripts/UserHandel.js"></script>
+
+    <script>
+
+        $(document).ready(function () {
+            console.log("getting all User tvs");
+            let User = JSON.parse(localStorage.getItem('UserIn'));
+            ajaxCall("GET", "../api/News?userId=" + User.Id, "", getSuccessTvs, getErrorTvs);
+            mode = "";
+            $("#viewDiv").hide();
+
+            $("#NewReForm").submit(handelSubmit);
+            $("#delArts").on("click", delUserArt);
+
+            $("#singIn").on("click", function () {
+                $("#popupIn").css("display", "block");
+            });
+
+            $("#singUp").on("click", function () {
+                $("#popupUp").css("display", "block");
+            });
+
+            $("#NewUserSingUpForm").submit(handelSubmitUp);
+            $("#NewUserSingInForm").submit(handelSubmitIn);
+
+            $("#cancelBTN").on("click", function () {
+               /* car = null;*/
+                $("#viewDiv").hide();
+                $("#artTable tr").removeClass("selected");
+                mode = "";
+            });
+
+        });
+
+        function getSuccessTvs(serName) {
+            var str = ""
+            for (var i = 0; i < serName.length; i++) {
+                str += "<option value='" + serName[i] + "'>";
+            }
+            $("#serios").html(str);
+        }
+
+        function getErrorTvs(err) {
+            console.log(err);
+        }
+
+        function showArts() {
+            sName = $("#chosenSer").val();
+            let User = JSON.parse(localStorage.getItem('UserIn'));
+            let api = "../api/News?srName=" + sName + "&userId=" + User.Id;
+
+            ajaxCall("GET", api, "", getSuccessSer, getErrorSer);
+        }
+
+        function getSuccessSer(serList) {
+            console.log(serList);
+            if (serList.length != 0) {
+                if ($.fn.DataTable.isDataTable('#artTable') == false) {
+                    renderArt(serList);
+                }
+                else {
+                    redrawTable(tbl, serList);
+                    buttonEvents();
+                }
+                $("#tForm").css("display", "block");
+                $("#ph").html("");
+            }
+            else {
+                if (mode == "delete") {
+                    swal("Deleted Successfuly!", "Great Job", "success");
+                    mode = "";
+                }
+                var str = "<h1>No articals</h1>";
+                $("#ph").html(str);
+                $("#tForm").css("display", "none");
+            }
+        }
+
+        function delUserArt() {
+            var selected = new Array();
+            $('.ch').each(function () {
+                if ($(this).is(":checked")) {
+                    selected.push(this.getAttribute('data-artId'));
+                }
+            });
+            if (selected.length == 0) {
+                alert("לא בחרת אף כתבה למחיקה")
+            }
+            else {
+                user = JSON.parse(localStorage.getItem('UserIn'));;
+                mode = "delete";
+                swal({ // this will open a dialouge 
+                    title: "Are you sure ??",
+                    text: "",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true
+                })
+                    .then(function (willDelete) {
+                        if (willDelete) DeleteArt(selected, user.Id);
+                        else swal("Not Deleted!");
+                    });
+            }
+        }
+
+        function DeleteArt(artsId, userId) {
+            for (var i = 0; i < artsId.length; i++) {
+                let api = "../api/News?Artid=" + artsId[i] + "&UserId=" + userId;
+                ajaxCall("PUT", api, "", deleteSuccess, delerror);
+            }
+            showArts();
+        }
+
+        function deleteSuccess(statos){
+            console.log(statos);
+        }
+
+        function delerror(err) {
+            console.log(err);
+        }
+
+        function redrawTable(tbl, serList) {
+            tbl.clear();
+            for (var i = 0; i < serList.length; i++) {
+                tbl.row.add(serList[i]);
+            }
+            if (mode =="delete") {
+                swal("Deleted Successfuly!", "Great Job", "success");
+                mode = "";
+            }
+            tbl.draw();
+        }
+
+        function renderArt(serList) {
+            serdata = serList; // keep the cars array in a global variable;
+            try {
+                tbl = $('#artTable').DataTable({
+                    data: serdata,
+                    pageLength: 5,
+                    columns: [
+                        {
+                            render: function (data, type, row, meta) {
+                                let dataArt = "data-artId='" + row.ArtId + "'";
+                                return '<input type="checkbox" class=ch ' + dataArt + ' />';
+                            }
+                        },
+                        {
+                            data: "Heder",
+                            render: function (data, type, row, meta) {
+                                return "<div class='text-wrap width-200'>" + data + "</div>";                            }
+                        },
+                        {
+                            data: "Summery",
+                            render: function (data, type, row, meta) {
+                                shortSum = data.substring(0, 55) + "...";
+                                return "<div class='text-wrap width-200'>" + shortSum + "</div>";
+                            }
+                        },
+                        { data: "Sorce" },
+                        {
+                            data: "Pdate",
+                            render: function (data, type, row, meta) {
+                                var dates = data.split("T");
+                                var date = dates[0];
+                                return date;
+                            }
+                        },
+                        {
+                            data: "Link",
+                            render: function (data, type, row, meta) {
+                                return "<a href='" + data + "'>Link</a>";
+                            }
+                        },
+                        {
+                            render: function (data, type, row, meta) {
+                                let dataArt = "data-artId='" + row.ArtId + "'";
+                                return "<button type='button' class = 'viewBtn btn' " + dataArt + "> צפייה </button>";
+                            }
+                        },
+                        {
+                            render: function (data, type, row, meta) {
+                                let ArtId = row.ArtId;
+                                return "<input type='button' class='addRvBTN' id='" + ArtId + "' value='כתוב ביקורת' />";
+                            }
+                        },
+                        {
+                            data: "PicUrl",
+                            visible: false
+                        },
+                        {
+                            data: "Summery",
+                            visible: false
+                        },
+                    ],
+                });
+                buttonEvents();
+
+            }
+
+            catch (err) {
+                alert(err);
+            }
+        }
+
+        function buttonEvents() {
+            $(".addRvBTN").on("click", function () {
+                corentAtrId = $(this).attr('id');
+                $("#popup").css("display", "block");
+            });
+
+            $(".viewBtn").on("click", function () {
+                mode = "view";
+                markSelected(this);
+                $("#viewDiv").show();
+                row.className = 'selected';
+                $("#viewDiv :input").attr("disabled", "disabled"); // view mode: disable all controls in the form
+                $("#cancelBTN").prop('disabled', false);
+                populateFields(this.getAttribute('data-artId'));
+            });
+
+        }
+
+        function markSelected(btn) {
+            $("#artTable tr").removeClass("selected"); // remove seleced class from rows that were selected before
+            row = (btn.parentNode).parentNode; // button is in TD which is in Row
+            row.className = 'selected'; // mark as selected
+        }
+
+        function populateFields(artId) {
+            art = getArt(artId);
+            $("#Heder").val(art.Heder);
+            $("#Source").val(art.Sorce);
+            $("#PublishDate").val(art.Pdate);
+            $("#Link").val(art.Link);
+            $("#Summery").val(art.Summery);
+            $("#image").attr("src", art.PicUrl);
+        }
+
+        function getArt(id) {
+            for (i in serdata) {
+                if (serdata[i].ArtId == id)
+                    return serdata[i];
+            }
+            return null;
+        }
+
+        //function renderArt(serList) {
+        //    var str = "";
+        //    for (var i = 0; i < serList.length; i++) {
+        //        str += "<div class='col-xs-2 col-md-4 card'><h3>Artical Header:" + serList[i].Heder + "</h1>";
+        //        str += "<p>Artical Summery:" + serList[i].Summery + "</p>";
+        //        str += "<h3>Artical Sorce:" + serList[i].Sorce + "</h3>";
+        //        var dates = serList[i].Pdate.split("T");
+        //        var date = dates[0];
+        //        str += "<h3>Artical DatePublish:" + date + "</h3>";
+        //        if (serList[i].PicUrl != "") {
+        //            str += "<img src='" + serList[i].PicUrl + "' />";
+        //        }
+        //        str += "<a href='" + serList[i].Link + "'>Artical Link</a>";
+        //        //let arrid = serList[i].ArtId.split("i")
+        //        //let artId = arrid[1];
+        //        str += "<button class='addRvBTN' id='" + serList[i].ArtId + "'>ADD Review</button></div>";
+        //    }
+        //    $("#ph").html(str);
+        //    $(".addRvBTN").on("click", function () {
+        //        corentAtrId = $(this).attr('id');
+        //        $("#popup").css("display", "block");
+        //    });
+        //}
+
+        function getErrorSer(err) {
+            console.log(err);
+        }
+
+        //function AddRvBD(event) {
+        //    corentAtrId = event.data.corId;
+        //    $("#popup").css("display", "block");
+        //    //strIng="kjfhsjdhsjfhsdjfhkjdfhskjfhskjf"
+        //    //document.getElementById("modalContent").innerHTML = strIng;
+        //}
+
+        function closeRevForm() {
+            $("#popup").css("display", "none");
+        }
+
+
+        function handelSubmit() {
+            let revName = $("#RevName").val();
+            let revEmail = $("#RevEmail").val();
+            let revRate = $("#RevRate").val();
+            let revText = $("#RevText").val();
+
+            var corentDateTime = new Date($.now());
+
+            let myReview = {
+                ArtId: corentAtrId,
+                RevName: revName,
+                RevEmail: revEmail,
+                RevDate: corentDateTime,
+                Rate: revRate,
+                RevText: revText
+            }
+
+            ajaxCall("POST", "../api/Rev", JSON.stringify(myReview), postSuccessRev, postErrorRev);
+
+            return false;
+        }
+
+        function postSuccessRev() {
+            console.log("addRev");
+            alert("ADD REW SECSSES");
+            closeForm();
+        }
+
+        function postErrorRev(err) {
+            console.log(err.responseText);
+        }
+
+    </script>
+
+</head>
+<body>
+
+    <nav class="navbar sticky-top navbar-dark bg-dark">
+        <a class="navbar-brand" id="UserName">אורח</a>
+        <a class="nav-item nav-link" href="insert.html" id="AddArt">הוספת כתבות</a>
+        <a class="nav-item nav-link" href="view.html" id="myArt">הכתבות שלי</a>
+        <a class="nav-item nav-link" href="AllReviews.html" id="myRev">ביקורות</a>
+        <div>
+            <button class="btn btn-light" type="submit" id="singUp">הרשמה</button>
+            <button class="btn btn-light" type="submit" id="singIn">התחברות</button>
+            <button class="btn btn-light" type="submit" id="singOut" onclick="singOut()">התנתקות</button>
+        </div>
+
+    </nav>
+    <div>
+        <h1>Chose a Serius: </h1>
+        <input list="serios" id="chosenSer">
+
+        <datalist id="serios">
+        </datalist>
+        <button class='ChoseBTN' onclick='showArts()'>CHOSE Serios</button>
+    </div>
+
+
+    <div id="ph"></div>
+
+    <div class="container row">
+        <form id="tForm">
+            <table id="artTable" class="display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Heder</th>
+                        <th>Short Summery</th>
+                        <th>Source</th>
+                        <th>Publish Date</th>
+                        <th>Link</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+            </table>
+            <input type="button" id="delArts" value="DELETE" />
+        </form>
+
+        <div id="viewDiv">
+            <form id="allDetArt">
+                <div class="form-group row">
+                    <div class="form-group col-sm-3">
+                        <label for="Heder"><span class="red-star">★ </span>Heder</label>
+                        <input type="text" class="form-control" id="Heder">
+                    </div>
+                    <div class="form-group col-sm-3">
+                        <label for="Source"><span class="red-star">★ </span>Source</label>
+                        <input type="text" class="form-control" id="Source">
+                    </div>
+                    <div class="form-group col-sm-3">
+                        <label for="PublishDate"><span class="red-star">★ </span>Publish Date</label>
+                        <input type="text" class="form-control" id="PublishDate">
+                    </div>
+                    <div class="form-group col-sm-3">
+                        <label for="Link"><span class="red-star">★ </span>Link</label>
+                        <input type="text" class="form-control" id="Link">
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="form-group col-sm-8">
+                        <label for="Summery">Summery</label>
+                        <textarea rows="6" class="form-control" id="Summery"></textarea>
+                    </div>
+                    <div class="form-group col-sm-4">
+                        <img src="" id="image" />
+                    </div>
+                </div>
+            </form>
+            <input type="button" class="btn btn-warning btn-lg" id="cancelBTN" value="close" />
+        </div>
+
+    </div>
+
+    <div id="popup" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modalContent modal-content">
+                <form id="NewReForm">
+                    <table>
+                        <tr>
+                            <td>Reviewer Name:</td>
+                            <td><input type="text" id="RevName" required maxlength="30" /></td>
+                        </tr>
+                        <tr>
+                            <td>Reviewer Email:</td>
+                            <td><input type="email" id="RevEmail" required /></td>
+                        </tr>
+                        <tr>
+                            <td>Rate:</td>
+                            <td><input type="number" id="RevRate" required min="1" max="5" /></td>
+                        </tr>
+                        <tr>
+                            <td>Review:</td>
+                            <td><input type="text" id="RevText" required minlength="10" maxlength="200" /></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button>Submit</button>
+                                <input type="button" onclick="closeRevForm()" value="Close Form" />
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="popupIn" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modalContent modal-content">
+                <form id="NewUserSingInForm">
+                    <table>
+                        <tr>
+                            <td>מייל</td>
+                            <td><input type="email" id="UserEmailIn" maxlength="200" required /></td>
+                        </tr>
+                        <tr>
+                            <td>ססמא</td>
+                            <td><input type="text" id="UserPasswordIn" maxlength="50" required /></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button>התחבר</button>
+                                <input type="button" onclick="closeForm()" value="חזרה" />
+                            </td>
+                        </tr>
+                    </table>
+                    <div id="ErrorIn"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="popupUp" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modalContent modal-content">
+                <form id="NewUserSingUpForm">
+                    <table>
+                        <tr>
+                            <td>שם פרטי</td>
+                            <td><input type="text" id="UserFname" maxlength="100" required /></td>
+                        </tr>
+                        <tr>
+                            <td>שם משפחה</td>
+                            <td><input type="text" id="UserLname" maxlength="100" required /></td>
+                        </tr>
+                        <tr>
+                            <td>תאריך לידה</td>
+                            <td><input type="date" id="UserbDate" /></td>
+                        </tr>
+                        <tr>
+                            <td>מייל</td>
+                            <td><input type="email" id="UserEmailUp" maxlength="200" required /></td>
+                        </tr>
+                        <tr>
+                            <td>ססמא</td>
+                            <td><input type="text" id="UserPasswordUp" maxlength="50" required /></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button>הירשם</button>
+                                <input type="button" onclick="closeForm()" value="חזרה" />
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div id="ErrorUp">
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

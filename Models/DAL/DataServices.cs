@@ -118,19 +118,35 @@ namespace EX3.Models.DAL
 
         public int InsertUserArt(string artId, int userId)
         {
+            int res = 1;
             SqlConnection con = null;
             try
             {
                 // C - Connect
                 con = Connect("webOsDB");
+                using (SqlCommand cmd = new SqlCommand("insertUserArt", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@ArtId", artId);
+                    cmd.Parameters.AddWithValue("@UserId", userId);
+                    var returnParameter = cmd.Parameters.Add("@results", SqlDbType.Int);
+                    returnParameter.Direction = ParameterDirection.ReturnValue;
+                    cmd.ExecuteNonQuery();
 
-                // C - Create Command
-                SqlCommand command = CreateInsertUserArt(artId, userId, con);
+                    var result = returnParameter.Value;
+                    if (result.Equals(0))
+                    {
+                        res=0;
+                    }
+                }
+                return res;
+                //// C - Create Command
+                //SqlCommand command = CreateInsertUserArt(artId, userId, con);
 
-                // E - Execute
-                int affected = command.ExecuteNonQuery();
+                //// E - Execute
+                //int affected = command.ExecuteNonQuery();
 
-                return affected;
+                //return affected;
 
             }
             catch (Exception ex)
@@ -188,17 +204,17 @@ namespace EX3.Models.DAL
 
         }
 
-        SqlCommand CreateInsertUserArt(string artId, int userId, SqlConnection con)
-        {
-            // INSERT INTO [Students_2022] ([name], age) VALUES('Messi', 34);
-            string insertStr = "INSERT INTO [UsersArticles_2022] ([id], [artId]) VALUES('" + userId + "', '" + artId+ "')";
-            SqlCommand command = new SqlCommand(insertStr, con);
-            // TBC - Type and Timeout
-            command.CommandType = System.Data.CommandType.Text;
-            command.CommandTimeout = 30;
-            return command;
+        //SqlCommand CreateInsertUserArt(string artId, int userId, SqlConnection con)
+        //{
+        //    // INSERT INTO [Students_2022] ([name], age) VALUES('Messi', 34);
+        //    string insertStr = "INSERT INTO [UsersArticles_2022] ([id], [artId]) VALUES('" + userId + "', '" + artId+ "')";
+        //    SqlCommand command = new SqlCommand(insertStr, con);
+        //    // TBC - Type and Timeout
+        //    command.CommandType = System.Data.CommandType.Text;
+        //    command.CommandTimeout = 30;
+        //    return command;
 
-        }
+        //}
 
         public List<string> ReadTVsName(int userId)
         {
@@ -324,7 +340,7 @@ namespace EX3.Models.DAL
         private SqlCommand creatSelectArtCommand(SqlConnection con,string srName, int userId)
         {
 
-            string commandStr = "SELECT Articles_2022.* FROM UsersArticles_2022 INNER JOIN Articles_2022 ON UsersArticles_2022.artId= Articles_2022.artId WHERE UsersArticles_2022.id=@userId AND Articles_2022.sName=@srName";
+            string commandStr = "SELECT Articles_2022.* FROM UsersArticles_2022 INNER JOIN Articles_2022 ON UsersArticles_2022.artId= Articles_2022.artId WHERE UsersArticles_2022.id=@userId AND Articles_2022.sName=@srName AND UAstatus=1";
             SqlCommand cmd = createCommand(con, commandStr);
             cmd.Parameters.AddWithValue("@userId", userId);
             cmd.Parameters.AddWithValue("@srName", srName);
@@ -559,6 +575,47 @@ namespace EX3.Models.DAL
 
             return cmd;
         }
+
+        public int updateAllArt(string Artid, int UserId)
+        {
+            SqlConnection con = null;
+            int res = 1;
+
+            try
+            {
+                con = Connect("webOsDB");
+                using (SqlCommand cmd = new SqlCommand("updateStatus", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@ArtId", Artid);
+                    cmd.Parameters.AddWithValue("@UserId", UserId);
+                    var returnParameter = cmd.Parameters.Add("@results", SqlDbType.Int);
+                    returnParameter.Direction = ParameterDirection.ReturnValue;
+                    cmd.ExecuteNonQuery();
+
+                    var result = returnParameter.Value;
+                    if (result.Equals(0))
+                    {
+                        throw new Exception("Fail in Update art" + Artid);
+                    }
+                }
+                return res;
+            }
+
+            catch (Exception ex)
+            {
+                throw (ex);
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
+            }
+        }
+
+
     }
 
    

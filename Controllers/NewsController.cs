@@ -20,8 +20,8 @@ namespace EX3.Controllers
         // GET api/<controller>/5
         public List<Article> Get(string srName, int userId)
         {
-            Article DBart = new Article();
-            List<Article> serArt = DBart.getAllArt(srName, userId);
+            Article A = new Article();
+            List<Article> serArt = A.getAllArt(srName, userId);
             return serArt;
         }
 
@@ -35,8 +35,11 @@ namespace EX3.Controllers
         }
 
         // PUT api/<controller>/5
-        public void Put(int id, [FromBody] string value)
+        public int Put(string Artid, int UserId)
         {
+            Article A = new Article();
+           int secsees= A.updateStatus(Artid, UserId);
+            return secsees;
         }
 
         // DELETE api/<controller>/5
