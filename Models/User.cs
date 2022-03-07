@@ -8,28 +8,37 @@ namespace EX3.Models
 {
     public class User
     {
-        int id;
-        string fName;
-        string lName;
-        DateTime birthDate;
-        string email;
-        string password;
+        // OHANA
+        private int id;
+        private string fName;
+        private string lName;
+        private DateTime birthDate;
+        private string email;
+        private string password;
 
-        public User(string fName, string lName, DateTime birthDate, string email, string password, int id)
+        public User() { }
+
+        // OHANA
+        public User(string email, string password, string fName, string lName, DateTime birthDate)
         {
+            this.email = email;
+            this.password = password;
             this.fName = fName;
             this.lName = lName;
+
             if (birthDate!=null)
             {
                 this.birthDate = birthDate;
             }
-            this.email = email;
-            this.password = password;
+        }
+
+        public User(int id, string email, string password, string fName, string lName, DateTime birthDate)
+        {
+            this(email, password, fName, lName, birthDate)
             this.id = id;
         }
 
-        public User() { }
-
+        // OHANA
         public string FName { get => fName; set => fName = value; }
         public string LName { get => lName; set => lName = value; }
         public DateTime BirthDate { get => birthDate; set => birthDate = value; }
@@ -40,14 +49,28 @@ namespace EX3.Models
         public int Insert()
         {
             DataServices ds = new DataServices();
+            User user = ds.ReadUser(this.email);
+
+            if (user != null) 
+            {
+                return -1; // USER already exist
+            }
+
             int status = ds.InsertUser(this);
             return status;
         }
 
-        public User readUser(string email, string password)
+        public static User readUser(string email, string password)
         {
             DataServices ds = new DataServices();
-           return ds.ReadUser(email, password);
+            User user = ds.ReadUser(email);
+
+            if (user == null || user.password != password)
+            {
+                return null // user not exist or password is wrong
+            }
+
+            return user;
         }
 
     }
