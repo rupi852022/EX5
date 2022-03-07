@@ -19,8 +19,7 @@ namespace EX3.Controllers
         // GET api/<controller>/5
         public User Get(string email, string password)
         {
-            User U = new User();
-            return U.readUser(email, password);
+            return User.readUser(email, password);
         }
 
         // POST api/<controller>

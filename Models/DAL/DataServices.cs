@@ -458,20 +458,15 @@ namespace EX3.Models.DAL
 
             finally
             {
-
-                // C - Close Connection
+                // Close Connection
                 con.Close();
-                //if (reviews == null)
-                //{
-                //    reviews = new List<Review>();
-                //}
-                //reviews.Add(R);
             }
         }
 
         SqlCommand CreateInsertUser(User U, SqlConnection con)
         {
             // INSERT INTO [Students_2022] ([name], age) VALUES('Messi', 34);
+            // OHANA
             string insertStr = "INSERT INTO [Users_2022] ([fName], [lName], [birthDate], [email], [password]) VALUES('" + U.FName + "', '" + U.LName + "', '" + U.BirthDate + "', '" + U.Email + "', '" + U.Password + "')";
             SqlCommand command = new SqlCommand(insertStr, con);
             // TBC - Type and Timeout
@@ -483,10 +478,10 @@ namespace EX3.Models.DAL
 
 
         //Read
-        public User ReadUser(string email,string password)
+        public User ReadUser(string email)
         {
-
             SqlConnection con = null;
+            SqlDataReader dr = null;
 
             try
             {
@@ -497,29 +492,33 @@ namespace EX3.Models.DAL
                 SqlCommand selectCommand = creatSelectUserCommand(con, email, password);
 
                 // Create the reader
-                SqlDataReader dr = selectCommand.ExecuteReader(CommandBehavior.CloseConnection);
+                dr = selectCommand.ExecuteReader(CommandBehavior.CloseConnection);
 
                 // Read the records
                 // Execute the command
                 //int id = Convert.ToInt32(insertCommand.ExecuteScalar());
 
-
-                User U = new User();
-
-                while (dr.Read())
+                if (dr == null || !dr.Read())
                 {
-                    //User U = new User();
-                    int id = Convert.ToInt32(dr["id"]);
-                    U.Id = id;
-                    U.LName = (string)dr["lName"];
-                    U.FName = (string)dr["fName"];
-                    U.BirthDate = (DateTime)dr["birthDate"];
-                    U.Email = (string)dr["email"];
-                    U.Password = (string)dr["password"];
+                    return null;
                 }
-                dr.Close();
 
-                return U;
+                // OHANA
+                int id = Convert.ToInt32(dr["id"]);
+                string email = (string)dr["email"];
+                string password = (string)dr["password"];
+                string fName = (string)dr["lName"];
+                string lName = (string)dr["fName"];
+                DateTime birthDate = (DateTime)dr["birthDate"];
+
+                User user = new User();
+
+                if (dr.Read()) 
+                {
+                    return null;
+                }
+
+                return user;
             }
             catch (Exception ex)
             {
@@ -528,21 +527,22 @@ namespace EX3.Models.DAL
             }
             finally
             {
+                if (dr != null)
+                {
+                    dr.Close();
+                }
+
                 // Close the connection
                 if (con != null)
                     con.Close();
             }
-
         }
 
-
-        private SqlCommand creatSelectUserCommand(SqlConnection con, string email, string password)
+        private SqlCommand creatSelectUserCommand(SqlConnection con, string email)
         {
-
-            string commandStr = "SELECT * FROM Users_2022 WHERE email=@email AND password=@password ";
+            string commandStr = "SELECT * FROM Users_2022 WHERE email=@email";
             SqlCommand cmd = createCommand(con, commandStr);
             cmd.Parameters.AddWithValue("@email", email);
-            cmd.Parameters.AddWithValue("@password", password);
 
             return cmd;
         }
