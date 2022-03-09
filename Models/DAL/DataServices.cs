@@ -13,7 +13,7 @@ namespace EX3.Models.DAL
         //public static List<Article> articles;
         //public static List<Review> reviews;
 
-        public int InsertArt(Article A, int UserId)
+        /*public int InsertArt(Article A, int UserId)
         {
             string artId = chackArt(A);
             if (artId==null)
@@ -430,7 +430,7 @@ namespace EX3.Models.DAL
             cmd.Parameters.AddWithValue("@userId", userId);
 
             return cmd;
-        }
+        }*/
 
 
         public int InsertUser(User U)
@@ -463,11 +463,11 @@ namespace EX3.Models.DAL
             }
         }
 
+
         SqlCommand CreateInsertUser(User U, SqlConnection con)
         {
-            // INSERT INTO [Students_2022] ([name], age) VALUES('Messi', 34);
-            // OHANA
-            string insertStr = "INSERT INTO [Users_2022] ([fName], [lName], [birthDate], [email], [password]) VALUES('" + U.FName + "', '" + U.LName + "', '" + U.BirthDate + "', '" + U.Email + "', '" + U.Password + "')";
+
+            string insertStr = "INSERT INTO [CoParkingUsers_2022] ([email], [password], [fName], [lName], [phoneNumber], [gender]) VALUES('" + U.Email + "', '" + U.Password + "', '" + U.FName + "', '" + U.LName + "', '" + U.PhoneNumber+ "', '" + U.Gender + "')";
             SqlCommand command = new SqlCommand(insertStr, con);
             // TBC - Type and Timeout
             command.CommandType = System.Data.CommandType.Text;
@@ -503,13 +503,15 @@ namespace EX3.Models.DAL
                     return null;
                 }
 
-                // OHANA
                 int id = Convert.ToInt32(dr["id"]);
                 string email = (string)dr["email"];
                 string password = (string)dr["password"];
                 string fName = (string)dr["lName"];
                 string lName = (string)dr["fName"];
-                DateTime birthDate = (DateTime)dr["birthDate"];
+                string phoneNumber = (string)dr["phoneNumber"];
+                string gender = (string)dr["gender"];
+
+
 
                 User user = new User();
 
@@ -540,7 +542,7 @@ namespace EX3.Models.DAL
 
         private SqlCommand creatSelectUserCommand(SqlConnection con, string email)
         {
-            string commandStr = "SELECT * FROM Users_2022 WHERE email=@email";
+            string commandStr = "SELECT * FROM CoParkingUsers_2022 WHERE email=@email";
             SqlCommand cmd = createCommand(con, commandStr);
             cmd.Parameters.AddWithValue("@email", email);
 
