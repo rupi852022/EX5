@@ -8,42 +8,35 @@ namespace EX3.Models
 {
     public class User
     {
-        // OHANA
+        
         private int id;
         private string fName;
         private string lName;
-        private DateTime birthDate;
         private string email;
         private string password;
+        private string gender;
+        private string phoneNumber;
 
         public User() { }
 
-        // OHANA
-        public User(string email, string password, string fName, string lName, DateTime birthDate)
+        
+        public User(string fName, string lName, string email, string password, string gender, string phoneNumber, int id)
         {
-            this.email = email;
-            this.password = password;
             this.fName = fName;
             this.lName = lName;
-
-            if (birthDate!=null)
-            {
-                this.birthDate = birthDate;
-            }
-        }
-
-        public User(int id, string email, string password, string fName, string lName, DateTime birthDate)
-        {
-            this(email, password, fName, lName, birthDate)
+            this.email = email;
+            this.password = password;
+            this.gender = gender;
+            this.phoneNumber = phoneNumber;
             this.id = id;
         }
 
-        // OHANA
         public string FName { get => fName; set => fName = value; }
         public string LName { get => lName; set => lName = value; }
-        public DateTime BirthDate { get => birthDate; set => birthDate = value; }
         public string Email { get => email; set => email = value; }
         public string Password { get => password; set => password = value; }
+        public string Gender { get => gender; set => gender = value; }
+        public string PhoneNumber { get => phoneNumber; set => phoneNumber = value; }
         public int Id { get => id; set => id = value; }
 
         public int Insert()
