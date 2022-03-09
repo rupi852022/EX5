@@ -11,30 +11,29 @@ namespace EX3.Models
         int id;
         string fName;
         string lName;
-        DateTime birthDate;
         string email;
         string password;
+        string gender
+        string phoneNumber
 
-        public User(string fName, string lName, DateTime birthDate, string email, string password, int id)
+        public User(string fName, string lName, string email, string password, string gender, string phoneNumber, int id)
         {
             this.fName = fName;
             this.lName = lName;
-            if (birthDate!=null)
-            {
-                this.birthDate = birthDate;
-            }
             this.email = email;
             this.password = password;
+            this.gender = gender;
+            this.phoneNumber = phoneNumber;
             this.id = id;
         }
 
         public User() { }
-
         public string FName { get => fName; set => fName = value; }
         public string LName { get => lName; set => lName = value; }
-        public DateTime BirthDate { get => birthDate; set => birthDate = value; }
         public string Email { get => email; set => email = value; }
         public string Password { get => password; set => password = value; }
+        public string Gender { get => gender; set => gender = value; }
+        public string PhoneNumber { get => phoneNumber; set => phoneNumber = value; }
         public int Id { get => id; set => id = value; }
 
         public int Insert()
